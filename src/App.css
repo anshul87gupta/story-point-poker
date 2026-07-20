@@ -1,0 +1,3 @@
+/* Intentionally minimal — StoryPointPoker and its child components are styled entirely via
+   Tailwind utility classes plus inline styles (see src/theme.js), not component-scoped CSS.
+   This file exists so App.jsx has somewhere to hang app-level overrides if you ever need one. */

@@ -1,0 +1,17 @@
+services:
+
+  react:
+
+    build: .
+
+    container_name: story-point-poker
+
+    ports:
+
+      - "5173:5173"
+
+    volumes:
+
+      - .:/app
+
+      - /app/node_modules
