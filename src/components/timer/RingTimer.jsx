@@ -30,7 +30,10 @@ export default function RingTimer({ remainingSeconds, totalSeconds, accentColor,
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-mono" style={{ fontSize: size === "sm" ? 16 : 20, color: "#FFFFFF", letterSpacing: "0.05em", fontVariantNumeric: "tabular-nums" }}>
+        <span
+          className="font-mono"
+          style={{ fontSize: size === "sm" ? 16 : 20, color: "#FFFFFF", letterSpacing: "0.05em", fontVariantNumeric: "tabular-nums" }}
+        >
           {formatClock(remainingSeconds)}
         </span>
         <span className="text-xs font-bold mt-1" style={{ color: alarm ? C.alarmSoft : "#FFFFFF" }}>

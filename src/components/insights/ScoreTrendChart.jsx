@@ -64,7 +64,10 @@ export default function ScoreTrendChart({ t, history }) {
             </div>
 
             <div className="flex items-stretch gap-1">
-              <div className="flex items-center justify-center shrink-0" style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", color: "#8C9BAB", fontSize: 9 }}>
+              <div
+                className="flex items-center justify-center shrink-0"
+                style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", color: "#8C9BAB", fontSize: 9 }}
+              >
                 {t.score}
               </div>
               <div className="flex-1 relative">

@@ -149,7 +149,8 @@ export const translations = {
     currentRound: "Aktuelle Runde",
     inviteHeading: "Lade Spieler in den Raum ein",
     inviteSub: "Sende den Link unten an dein Team — schon bald werden sie dem Raum beitreten",
-    moderatorHint: 'Du bist der Moderator und hast die Kontrolle über die Schätzungssitzung. Klicke auf "Start", sobald alle Spieler beigetreten sind 🚀',
+    moderatorHint:
+      'Du bist der Moderator und hast die Kontrolle über die Schätzungssitzung. Klicke auf "Start", sobald alle Spieler beigetreten sind 🚀',
     startEstimating: "Schätzung starten",
     copyLink: "Link kopieren",
     copied: "Kopiert!",
@@ -255,7 +256,7 @@ export const translations = {
     sprintGoalPlaceholder: "जैसे: यूज़र्स को बिना सपोर्ट के पासवर्ड रीसेट करने में सक्षम बनाना",
     definitionOfDoneLabel: "Definition of Done",
     addDefinitionOfDone: "+ Definition of Done जोड़ें (वैकल्पिक)",
-    dodPlaceholder: "इस स्टोरी के लिए \"पूर्ण\" कैसा दिखता है?",
+    dodPlaceholder: 'इस स्टोरी के लिए "पूर्ण" कैसा दिखता है?',
     edit: "संपादित करें",
     signIn: "साइन इन करें",
     signUp: "साइन अप करें",

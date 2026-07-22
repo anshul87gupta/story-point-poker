@@ -17,7 +17,12 @@ export default function DeckSettingsPanel({ t, deckType, onChangeDeckType, disab
       <label className="text-xs block mb-1" style={{ color: C.textMuted }}>
         {t.deckType}
       </label>
-      <select value={deckType} onChange={(e) => onChangeDeckType(e.target.value)} className="w-full border rounded px-2 py-1.5 text-sm mb-3 focus:outline-none" style={{ borderColor: C.border, color: C.navy }}>
+      <select
+        value={deckType}
+        onChange={(e) => onChangeDeckType(e.target.value)}
+        className="w-full border rounded px-2 py-1.5 text-sm mb-3 focus:outline-none"
+        style={{ borderColor: C.border, color: C.navy }}
+      >
         {Object.keys(DECKS).map((key) => (
           <option key={key} value={key}>
             {t[DECKS[key].label]}
@@ -35,7 +40,11 @@ export default function DeckSettingsPanel({ t, deckType, onChangeDeckType, disab
               key={v}
               onClick={() => onToggleCard(v)}
               className="text-xs font-medium rounded px-2 py-1 border"
-              style={{ backgroundColor: active ? C.primaryTint : "#fff", borderColor: active ? C.primary : C.border, color: active ? C.primary : C.textFaint }}
+              style={{
+                backgroundColor: active ? C.primaryTint : "#fff",
+                borderColor: active ? C.primary : C.border,
+                color: active ? C.primary : C.textFaint,
+              }}
             >
               {v}
             </button>

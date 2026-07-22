@@ -20,7 +20,7 @@ Playwright, Husky) doesn't fit into just one of them cleanly. Read this before r
 - **ESLint / Prettier / Vitest can run inside the container just fine.** `npm install` at image
   build time already pulls in devDependencies, so these work via `docker compose exec`.
 - **Husky (git hooks) cannot run inside the container.** `git commit` happens on the WSL host,
-  so the hook script needs `node_modules` to exist *there* — which means a native `npm install`
+  so the hook script needs `node_modules` to exist _there_ — which means a native `npm install`
   in WSL, separate from Docker, just for this.
 - **Playwright (E2E) should not run inside this Alpine image.** Playwright's bundled Chromium
   expects a glibc-based Linux (Debian/Ubuntu) and doesn't officially support Alpine/musl. Run E2E
@@ -30,36 +30,41 @@ Playwright, Husky) doesn't fit into just one of them cleanly. Read this before r
 ## One-time setup
 
 **1. Rebuild the Docker image** (picks up the new devDependencies added to `package.json`):
+
 ```
 docker compose build
 ```
 
 **2. Install natively in WSL too** (for git hooks + your editor's ESLint/Prettier integration):
+
 ```
 npm install
 ```
+
 Run this directly in your WSL terminal, in the project folder — not inside the container.
 
 **3. Initialize Husky** (native, WSL):
+
 ```
 npx husky init
 ```
 
 **4. Install Playwright's browser** (native, WSL — not in Docker):
+
 ```
 npx playwright install --with-deps chromium
 ```
 
 ## Day-to-day commands
 
-| Task | Where | Command |
-|---|---|---|
-| Start the app | WSL | `docker compose up` |
-| Lint | either | `docker compose exec react npm run lint`  *or*  `npm run lint` |
-| Format check | either | `docker compose exec react npm run format:check`  *or*  `npm run format:check` |
-| Unit/component tests | either | `docker compose exec react npm run test`  *or*  `npm run test` |
-| E2E tests | **WSL only** | `npm run test:e2e` |
-| Git commit | WSL | `git commit -m "..."` — lint-staged runs automatically |
+| Task                 | Where        | Command                                                                      |
+| -------------------- | ------------ | ---------------------------------------------------------------------------- |
+| Start the app        | WSL          | `docker compose up`                                                          |
+| Lint                 | either       | `docker compose exec react npm run lint` _or_ `npm run lint`                 |
+| Format check         | either       | `docker compose exec react npm run format:check` _or_ `npm run format:check` |
+| Unit/component tests | either       | `docker compose exec react npm run test` _or_ `npm run test`                 |
+| E2E tests            | **WSL only** | `npm run test:e2e`                                                           |
+| Git commit           | WSL          | `git commit -m "..."` — lint-staged runs automatically                       |
 
 ## CI (GitHub Actions)
 

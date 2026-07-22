@@ -25,7 +25,10 @@ export default function AlignmentPanel({ t, history, avgPoints, avgCard }) {
               <span className="text-sm" style={{ color: "#B6C2CF" }}>
                 {t.alignmentScoreLabel}
               </span>
-              <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: badgeColor, color: badgeTextDark ? C.navy : "#fff" }}>
+              <span
+                className="text-xs font-bold px-3 py-1 rounded-full"
+                style={{ backgroundColor: badgeColor, color: badgeTextDark ? C.navy : "#fff" }}
+              >
                 {alignmentLabel(current, t)}
               </span>
             </div>
