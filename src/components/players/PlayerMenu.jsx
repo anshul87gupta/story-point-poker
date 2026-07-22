@@ -3,7 +3,7 @@ import { Gamepad2, Eye } from "lucide-react";
 import { C } from "../../theme";
 import Switch from "../common/Switch";
 
-export default function PlayerMenu({ t, player, onToggleModerator, onToggleObserver, onLeave, onClose }) {
+export default function PlayerMenu({ t, player, onToggleModerator, onToggleObserver, onLeave }) {
   return (
     <div className="absolute right-0 top-full mt-1 z-20 w-56 bg-white rounded shadow-lg py-1.5 border" style={{ borderColor: C.border }}>
       <div className="flex items-center justify-between px-3 py-2 text-sm" style={{ color: C.navy }}>

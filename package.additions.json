@@ -1,5 +1,6 @@
 {
   "_note": "Do NOT copy this file over your real package.json. In your package.json: (1) change the 'lint' script from 'oxlint' to 'eslint .', (2) add 'lint:fix' below, (3) merge the other scripts + devDependencies in, (4) remove 'oxlint' from devDependencies. Then run the npm commands listed in chat to actually install/uninstall.",
+
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -10,6 +11,7 @@
     "test:e2e": "playwright test",
     "prepare": "husky"
   },
+
   "devDependencies": {
     "@eslint/js": "^9.9.0",
     "@playwright/test": "^1.46.0",

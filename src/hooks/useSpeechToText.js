@@ -51,7 +51,7 @@ export function useSpeechToText({ lang, onResult }) {
     try {
       recognition.start();
       setListening(true);
-    } catch (e) {
+    } catch {
       setListening(false);
       setError("start-failed");
     }

@@ -19,6 +19,7 @@ export default function SprintGoalBanner({ t, goal, draft, setDraft, editing, is
             <div>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
+                  // eslint-disable-next-line jsx-a11y/no-autofocus -- triggered only by the user explicitly clicking "+ Add a Sprint Goal", not on page load
                   autoFocus
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
@@ -29,7 +30,11 @@ export default function SprintGoalBanner({ t, goal, draft, setDraft, editing, is
                   style={{ borderColor: C.border, color: C.navy }}
                 />
                 <MicButton speechLang={speechLang} onResult={(text) => setDraft((prev) => (prev ? prev + " " + text : text))} />
-                <button onClick={onSave} className="text-xs font-medium rounded px-3 py-1.5 text-white shrink-0" style={{ backgroundColor: C.primary }}>
+                <button
+                  onClick={onSave}
+                  className="text-xs font-medium rounded px-3 py-1.5 text-white shrink-0"
+                  style={{ backgroundColor: C.primary }}
+                >
                   {t.save}
                 </button>
               </div>

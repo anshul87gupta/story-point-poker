@@ -1,7 +1,7 @@
 import { C } from "../theme";
 
 /* ------------------------------- Alignment score -------------------------------
-   Approximates storypoint.poker's "alignment score" concept: how close the team's votes are,
+   Approximates storypointpoker's "alignment score" concept: how close the team's votes are,
    measured by ordinal distance within the active deck (not raw numbers, so it also works for
    non-numeric decks like T-shirt sizes). This is our own heuristic, not a published formula. */
 export function computeAlignment(playersAtReveal, activeCards) {

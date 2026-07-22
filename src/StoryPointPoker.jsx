@@ -5,7 +5,7 @@ import { C } from "./theme";
 import { DECKS } from "./config/decks";
 import { translations, LANG_LABELS, SPEECH_LOCALES } from "./i18n/translations";
 import { avatarEmoji, generateRoomCode, cardToNumber, validateName, isRoomFull } from "./utils/helpers";
-import { NAME_MAX_LENGTH, MAX_PLAYERS_PER_ROOM } from "./config/limits";
+import { NAME_MAX_LENGTH } from "./config/limits";
 import { computeAlignment } from "./utils/alignment";
 
 import PlayersPanel from "./components/players/PlayersPanel";
@@ -87,7 +87,11 @@ export default function StoryPointPoker() {
   function handleStartEstimating() {
     const self = players.find((p) => p.id === "self");
     if (!self || !self.isModerator) return;
-    setPlayers((prev) => (prev.some((p) => p.id === "p2") || isRoomFull(prev) ? prev : [...prev, { id: "p2", name: "Rahul", emoji: "🎮", isModerator: false, isObserver: false, vote: null }]));
+    setPlayers((prev) =>
+      prev.some((p) => p.id === "p2") || isRoomFull(prev)
+        ? prev
+        : [...prev, { id: "p2", name: "Rahul", emoji: "🎮", isModerator: false, isObserver: false, vote: null }]
+    );
     setView("voting");
   }
 
@@ -112,7 +116,10 @@ export default function StoryPointPoker() {
       setTimeout(() => setCopied(false), 2000);
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(inviteLink).then(onCopied).catch(() => {});
+      navigator.clipboard
+        .writeText(inviteLink)
+        .then(onCopied)
+        .catch(() => {});
     } else {
       const ta = document.createElement("textarea");
       ta.value = inviteLink;
@@ -124,7 +131,7 @@ export default function StoryPointPoker() {
       try {
         document.execCommand("copy");
         onCopied();
-      } catch (e) {
+      } catch {
         /* clipboard unsupported — the link is still visible and selectable manually */
       }
       document.body.removeChild(ta);
@@ -282,6 +289,7 @@ export default function StoryPointPoker() {
   }
 
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- this is a page-level click-outside handler to dismiss open menus/popovers, not an interactive control itself; every real control inside remains independently keyboard-accessible
     <div
       onClick={() => {
         if (openMenuFor) setOpenMenuFor(null);
@@ -300,10 +308,16 @@ export default function StoryPointPoker() {
             {t.appTitle}
           </h1>
         </div>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- stops the outer click-outside handler from firing when interacting with these real, independently-accessible controls */}
         <div className="flex items-center gap-3 sm:gap-4" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1" style={{ color: C.textMuted }}>
             <Globe className="w-4 h-4" />
-            <select value={lang} onChange={(e) => setLang(e.target.value)} className="bg-transparent text-sm font-medium focus:outline-none cursor-pointer" style={{ color: C.navy }}>
+            <select
+              value={lang}
+              onChange={(e) => setLang(e.target.value)}
+              className="bg-transparent text-sm font-medium focus:outline-none cursor-pointer"
+              style={{ color: C.navy }}
+            >
               {Object.keys(translations).map((code) => (
                 <option key={code} value={code}>
                   {LANG_LABELS[code]}
@@ -441,7 +455,11 @@ export default function StoryPointPoker() {
                   <MessageCircle className="w-4 h-4" />
                   {t.shareWhatsApp}
                 </button>
-                <button onClick={shareEmail} className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white" style={{ backgroundColor: C.primary }}>
+                <button
+                  onClick={shareEmail}
+                  className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white"
+                  style={{ backgroundColor: C.primary }}
+                >
                   <Mail className="w-4 h-4" />
                   {t.shareEmail}
                 </button>
@@ -462,7 +480,11 @@ export default function StoryPointPoker() {
                   <p className="text-sm max-w-md mx-auto lg:mx-0 mb-6" style={{ color: C.textMuted }}>
                     {t.moderatorHint}
                   </p>
-                  <button onClick={handleStartEstimating} className="font-medium text-sm rounded px-8 py-3 text-white w-full max-w-xs sm:w-auto" style={{ backgroundColor: C.primary }}>
+                  <button
+                    onClick={handleStartEstimating}
+                    className="font-medium text-sm rounded px-8 py-3 text-white w-full max-w-xs sm:w-auto"
+                    style={{ backgroundColor: C.primary }}
+                  >
                     {t.startEstimating}
                   </button>
                 </>
@@ -531,7 +553,13 @@ export default function StoryPointPoker() {
                 />
                 <div className="flex flex-wrap justify-center gap-3 sm:gap-4 lg:gap-5 max-w-2xl lg:max-w-4xl xl:max-w-5xl">
                   {activeCards.map((val) => (
-                    <PokerCard key={val} value={val} selected={self?.vote === val} disabled={self?.isObserver} onClick={() => handleSelectCard(val)} />
+                    <PokerCard
+                      key={val}
+                      value={val}
+                      selected={self?.vote === val}
+                      disabled={self?.isObserver}
+                      onClick={() => handleSelectCard(val)}
+                    />
                   ))}
                 </div>
                 {self?.isModerator ? (
@@ -549,7 +577,11 @@ export default function StoryPointPoker() {
                   </button>
                 ) : (
                   <div className="mt-8 sm:mt-10 flex flex-col items-center gap-2">
-                    <button disabled className="font-medium text-sm rounded px-6 py-2.5 flex items-center gap-2" style={{ backgroundColor: C.border, color: C.textFaint, cursor: "not-allowed" }}>
+                    <button
+                      disabled
+                      className="font-medium text-sm rounded px-6 py-2.5 flex items-center gap-2"
+                      style={{ backgroundColor: C.border, color: C.textFaint, cursor: "not-allowed" }}
+                    >
                       <Lock className="w-4 h-4" />
                       {t.reveal}
                     </button>
@@ -575,11 +607,19 @@ export default function StoryPointPoker() {
                 <PieResult votes={votesForPie} />
                 {self?.isModerator ? (
                   <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs sm:max-w-none sm:justify-center mt-8">
-                    <button onClick={handleStartNewRound} className="font-medium text-sm rounded px-5 py-2.5 text-white" style={{ backgroundColor: C.primary }}>
+                    <button
+                      onClick={handleStartNewRound}
+                      className="font-medium text-sm rounded px-5 py-2.5 text-white"
+                      style={{ backgroundColor: C.primary }}
+                    >
                       {t.startNewRound}
                     </button>
                     {currentScore !== 100 && (
-                      <button onClick={handleReEstimate} className="font-medium text-sm rounded px-5 py-2.5 bg-white border" style={{ borderColor: C.border, color: C.navy }}>
+                      <button
+                        onClick={handleReEstimate}
+                        className="font-medium text-sm rounded px-5 py-2.5 bg-white border"
+                        style={{ borderColor: C.border, color: C.navy }}
+                      >
                         {t.reEstimate}
                       </button>
                     )}
@@ -601,7 +641,9 @@ export default function StoryPointPoker() {
         </div>
       )}
 
-      {roomFullNoticeOpen && <RoomFullNotice t={t} roomCreatorName={players.find((p) => p.isModerator)?.name} onClose={() => setRoomFullNoticeOpen(false)} />}
+      {roomFullNoticeOpen && (
+        <RoomFullNotice t={t} roomCreatorName={players.find((p) => p.isModerator)?.name} onClose={() => setRoomFullNoticeOpen(false)} />
+      )}
     </div>
   );
 }

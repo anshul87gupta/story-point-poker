@@ -14,6 +14,7 @@ export default function DefinitionOfDoneField({ t, dod, draft, setDraft, editing
           {editing ? (
             <div className="flex flex-col sm:flex-row gap-2">
               <input
+                // eslint-disable-next-line jsx-a11y/no-autofocus -- triggered only by the user explicitly clicking "+ Add a Definition of Done", not on page load
                 autoFocus
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}

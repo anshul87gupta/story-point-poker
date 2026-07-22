@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { User, LogIn, UserPlus, LogOut, X } from "lucide-react";
 import { C } from "../../theme";
 
@@ -14,6 +14,18 @@ export default function AuthMenu({ t }) {
     setOpen(false);
     setView("menu");
   }
+
+  // Real keyboard support for dismissing the menu, since the backdrop div below is
+  // intentionally mouse/touch-only (see comment there).
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(e) {
+      if (e.key === "Escape") close();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
   function handleSignIn() {
     setSignedIn(true);
     close();
@@ -29,6 +41,7 @@ export default function AuthMenu({ t }) {
   }
 
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- stops the click from reaching anything behind the menu; the actual controls inside are all real, keyboard-accessible buttons
     <div className="relative" onClick={(e) => e.stopPropagation()}>
       <button
         onClick={() => setOpen((o) => !o)}
@@ -41,13 +54,17 @@ export default function AuthMenu({ t }) {
 
       {open && (
         <>
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- mouse/touch-only click-outside-to-dismiss backdrop; Escape (handled above) and the visible close controls are the keyboard path */}
           <div className="fixed inset-0 z-30" onClick={close} />
           <div className="absolute right-0 top-full mt-2 z-40 w-72 bg-white rounded shadow-lg border p-4" style={{ borderColor: C.border }}>
             {view === "menu" &&
               (signedIn ? (
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ backgroundColor: C.primary }}>
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+                      style={{ backgroundColor: C.primary }}
+                    >
                       {(emailField || "U")[0].toUpperCase()}
                     </div>
                     <span className="text-sm truncate" style={{ color: C.navy }}>
@@ -93,7 +110,11 @@ export default function AuthMenu({ t }) {
                 </div>
 
                 {view === "signup" && (
-                  <input placeholder={t.fullName} className="w-full mb-2 rounded px-2 py-1.5 text-sm border focus:outline-none" style={{ borderColor: C.border, color: C.navy }} />
+                  <input
+                    placeholder={t.fullName}
+                    className="w-full mb-2 rounded px-2 py-1.5 text-sm border focus:outline-none"
+                    style={{ borderColor: C.border, color: C.navy }}
+                  />
                 )}
                 <input
                   type="email"
@@ -103,7 +124,12 @@ export default function AuthMenu({ t }) {
                   className="w-full mb-2 rounded px-2 py-1.5 text-sm border focus:outline-none"
                   style={{ borderColor: C.border, color: C.navy }}
                 />
-                <input type="password" placeholder={t.password} className="w-full mb-2 rounded px-2 py-1.5 text-sm border focus:outline-none" style={{ borderColor: C.border, color: C.navy }} />
+                <input
+                  type="password"
+                  placeholder={t.password}
+                  className="w-full mb-2 rounded px-2 py-1.5 text-sm border focus:outline-none"
+                  style={{ borderColor: C.border, color: C.navy }}
+                />
                 {view === "signup" && (
                   <input
                     type="password"
@@ -135,13 +161,25 @@ export default function AuthMenu({ t }) {
                 </div>
 
                 <div className="flex gap-2 mb-3">
-                  <button type="button" className="flex-1 text-xs font-medium rounded px-2 py-1.5 border" style={{ borderColor: C.border, color: C.navy }}>
+                  <button
+                    type="button"
+                    className="flex-1 text-xs font-medium rounded px-2 py-1.5 border"
+                    style={{ borderColor: C.border, color: C.navy }}
+                  >
                     Google
                   </button>
-                  <button type="button" className="flex-1 text-xs font-medium rounded px-2 py-1.5 border" style={{ borderColor: C.border, color: C.navy }}>
+                  <button
+                    type="button"
+                    className="flex-1 text-xs font-medium rounded px-2 py-1.5 border"
+                    style={{ borderColor: C.border, color: C.navy }}
+                  >
                     Microsoft
                   </button>
-                  <button type="button" className="flex-1 text-xs font-medium rounded px-2 py-1.5 border" style={{ borderColor: C.border, color: C.navy }}>
+                  <button
+                    type="button"
+                    className="flex-1 text-xs font-medium rounded px-2 py-1.5 border"
+                    style={{ borderColor: C.border, color: C.navy }}
+                  >
                     GitHub
                   </button>
                 </div>

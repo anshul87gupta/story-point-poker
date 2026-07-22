@@ -29,7 +29,7 @@ export default function PlayersPanel({
   const [inlineValue, setInlineValue] = useState("");
   const [inlineError, setInlineError] = useState(null);
 
-  function commitInlineRename(id, fallbackName) {
+  function commitInlineRename(id) {
     const error = validateName(inlineValue);
     if (error) {
       setInlineError(error);
@@ -42,7 +42,10 @@ export default function PlayersPanel({
 
   return (
     <div className="w-full">
-      <div className="relative rounded-t px-3 py-2 flex items-center justify-between" style={{ backgroundColor: C.bg, border: `1px solid ${C.border}`, borderBottom: "none" }}>
+      <div
+        className="relative rounded-t px-3 py-2 flex items-center justify-between"
+        style={{ backgroundColor: C.bg, border: `1px solid ${C.border}`, borderBottom: "none" }}
+      >
         <span className="font-semibold text-sm" style={{ color: C.navy }}>
           {t.players} ({players.length}/{MAX_PLAYERS_PER_ROOM})
         </span>
@@ -76,19 +79,32 @@ export default function PlayersPanel({
           )}
         </div>
         {deckSettingsOpen && (
+          // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- stops clicks inside the popover from reaching the page-level click-outside handler; DeckSettingsPanel's own controls are independently keyboard-accessible
           <div onClick={(e) => e.stopPropagation()}>
-            <DeckSettingsPanel t={t} deckType={deckType} onChangeDeckType={onChangeDeckType} disabledCards={disabledCards} onToggleCard={onToggleCard} onClose={() => setDeckSettingsOpen(false)} />
+            <DeckSettingsPanel
+              t={t}
+              deckType={deckType}
+              onChangeDeckType={onChangeDeckType}
+              disabledCards={disabledCards}
+              onToggleCard={onToggleCard}
+              onClose={() => setDeckSettingsOpen(false)}
+            />
           </div>
         )}
       </div>
       <div className="rounded-b bg-white" style={{ border: `1px solid ${C.border}`, minHeight: 96 }}>
         {players.map((p, idx) => (
-          <div key={p.id} className="relative flex items-center justify-between px-3 py-2.5" style={{ borderTop: idx === 0 ? "none" : `1px solid ${C.border}` }}>
+          <div
+            key={p.id}
+            className="relative flex items-center justify-between px-3 py-2.5"
+            style={{ borderTop: idx === 0 ? "none" : `1px solid ${C.border}` }}
+          >
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-lg leading-none">{p.emoji}</span>
               {p.id === "self" && inlineEditing ? (
                 <div className="relative">
                   <input
+                    // eslint-disable-next-line jsx-a11y/no-autofocus -- triggered only by the user explicitly clicking the edit (pencil) icon, not on page load
                     autoFocus
                     value={inlineValue}
                     onChange={(e) => {
@@ -100,13 +116,13 @@ export default function PlayersPanel({
                     aria-invalid={!!inlineError}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        commitInlineRename(p.id, p.name);
+                        commitInlineRename(p.id);
                       } else if (e.key === "Escape") {
                         setInlineEditing(false);
                         setInlineError(null);
                       }
                     }}
-                    onBlur={() => commitInlineRename(p.id, p.name)}
+                    onBlur={() => commitInlineRename(p.id)}
                     className="text-sm rounded px-1.5 py-0.5 border focus:outline-none"
                     style={{ borderColor: inlineError ? C.alarmBorder : C.primary, color: C.navy, width: 96 }}
                   />
@@ -145,13 +161,21 @@ export default function PlayersPanel({
             <div className="flex items-center gap-2 shrink-0">
               {revealed ? (
                 <span className="text-sm font-semibold" style={{ color: C.navy }}>
-                  {p.isObserver ? "—" : p.vote ?? "-"}
+                  {p.isObserver ? "—" : (p.vote ?? "-")}
                 </span>
               ) : (
                 !p.isObserver &&
-                (p.vote != null ? <Check className="w-4 h-4" style={{ color: C.green }} /> : <Clock className="w-4 h-4" style={{ color: C.textMuted }} />)
+                (p.vote != null ? (
+                  <Check className="w-4 h-4" style={{ color: C.green }} />
+                ) : (
+                  <Clock className="w-4 h-4" style={{ color: C.textMuted }} />
+                ))
               )}
-              <button onClick={() => setOpenMenuFor(openMenuFor === p.id ? null : p.id)} className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100" style={{ color: C.textMuted }}>
+              <button
+                onClick={() => setOpenMenuFor(openMenuFor === p.id ? null : p.id)}
+                className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100"
+                style={{ color: C.textMuted }}
+              >
                 <MoreVertical className="w-4 h-4" />
               </button>
             </div>
@@ -162,7 +186,6 @@ export default function PlayersPanel({
                 onToggleModerator={() => onToggleModerator(p.id)}
                 onToggleObserver={() => onToggleObserver(p.id)}
                 onLeave={() => onLeave(p.id)}
-                onClose={() => setOpenMenuFor(null)}
               />
             )}
           </div>

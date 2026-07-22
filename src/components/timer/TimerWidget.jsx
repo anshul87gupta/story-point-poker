@@ -73,7 +73,7 @@ export default function TimerWidget({ t }) {
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.16);
-    } catch (e) {
+    } catch {
       /* audio unsupported in this environment — the visual pulse still communicates the alarm */
     }
   }, []);
@@ -129,7 +129,11 @@ export default function TimerWidget({ t }) {
   const accent = alarm ? C.alarmBorder : C.focusRing;
 
   return (
-    <div ref={containerRef} className="rounded p-2.5 w-full" style={{ backgroundColor: alarm ? C.alarmDeep : C.navy, boxShadow: alarm ? `0 0 0 2px ${C.alarmBorder}` : "none" }}>
+    <div
+      ref={containerRef}
+      className="rounded p-2.5 w-full"
+      style={{ backgroundColor: alarm ? C.alarmDeep : C.navy, boxShadow: alarm ? `0 0 0 2px ${C.alarmBorder}` : "none" }}
+    >
       <div className="flex rounded p-0.5 mb-2.5" style={{ backgroundColor: C.navyDeep }}>
         <button
           onClick={() => setMode("event")}
@@ -160,7 +164,13 @@ export default function TimerWidget({ t }) {
       ) : (
         <>
           <div className="flex flex-col items-center">
-            <RingTimer remainingSeconds={mode === "event" ? eventRemaining : storySeconds} totalSeconds={mode === "event" ? budgetSeconds : storyLimitMin * 60} accentColor={accent} alarm={false} size="sm" />
+            <RingTimer
+              remainingSeconds={mode === "event" ? eventRemaining : storySeconds}
+              totalSeconds={mode === "event" ? budgetSeconds : storyLimitMin * 60}
+              accentColor={accent}
+              alarm={false}
+              size="sm"
+            />
             <span className="text-xs mt-1" style={{ color: C.textFaint }}>
               {t.remaining}
             </span>
@@ -168,7 +178,12 @@ export default function TimerWidget({ t }) {
             <div className="mt-1.5 flex items-center gap-1 text-xs" style={{ color: C.textFaint }}>
               <span>{t.original}:</span>
               {mode === "event" ? (
-                <select value={sprintWeeks} onChange={(e) => changeSprintWeeks(Number(e.target.value))} className="bg-transparent font-medium focus:outline-none cursor-pointer" style={{ color: C.focusRing }}>
+                <select
+                  value={sprintWeeks}
+                  onChange={(e) => changeSprintWeeks(Number(e.target.value))}
+                  className="bg-transparent font-medium focus:outline-none cursor-pointer"
+                  style={{ color: C.focusRing }}
+                >
                   {[1, 2, 3, 4].map((w) => (
                     <option key={w} value={w} style={{ color: "#000" }}>
                       {w} {t.weeks} ({w * 2}h)
@@ -176,7 +191,12 @@ export default function TimerWidget({ t }) {
                   ))}
                 </select>
               ) : (
-                <select value={storyLimitMin} onChange={(e) => changeStoryLimit(Number(e.target.value))} className="bg-transparent font-medium focus:outline-none cursor-pointer" style={{ color: C.focusRing }}>
+                <select
+                  value={storyLimitMin}
+                  onChange={(e) => changeStoryLimit(Number(e.target.value))}
+                  className="bg-transparent font-medium focus:outline-none cursor-pointer"
+                  style={{ color: C.focusRing }}
+                >
                   {[2, 3].map((m) => (
                     <option key={m} value={m} style={{ color: "#000" }}>
                       {m} {t.min}
@@ -202,7 +222,12 @@ export default function TimerWidget({ t }) {
                   { label: "-10s", fn: () => adjustStory(-10) },
                 ]
             ).map((btn) => (
-              <button key={btn.label} onClick={btn.fn} className="text-xs font-medium rounded py-1 border" style={{ color: "#B6C2CF", borderColor: C.navyBorder }}>
+              <button
+                key={btn.label}
+                onClick={btn.fn}
+                className="text-xs font-medium rounded py-1 border"
+                style={{ color: "#B6C2CF", borderColor: C.navyBorder }}
+              >
                 {btn.label}
               </button>
             ))}
@@ -217,7 +242,11 @@ export default function TimerWidget({ t }) {
               {isRunning ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
               {isRunning ? t.pause : t.start}
             </button>
-            <button onClick={resetActive} className="flex-1 flex items-center justify-center gap-1 font-semibold text-xs rounded-full py-1.5 border" style={{ color: "#B6C2CF", borderColor: C.navyBorder }}>
+            <button
+              onClick={resetActive}
+              className="flex-1 flex items-center justify-center gap-1 font-semibold text-xs rounded-full py-1.5 border"
+              style={{ color: "#B6C2CF", borderColor: C.navyBorder }}
+            >
               <RotateCcw className="w-3 h-3" />
               {t.reset}
             </button>

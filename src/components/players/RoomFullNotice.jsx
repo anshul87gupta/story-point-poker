@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { X, Users } from "lucide-react";
 import { C } from "../../theme";
 import { MAX_PLAYERS_PER_ROOM } from "../../config/limits";
@@ -8,8 +8,20 @@ import { MAX_PLAYERS_PER_ROOM } from "../../config/limits";
    joining" control once the room is at capacity, so the exact blocking message can be
    previewed and tested today. */
 export default function RoomFullNotice({ t, roomCreatorName, onClose }) {
+  // Real keyboard support for dismissing, since the backdrop below is intentionally
+  // mouse/touch-only (see comment there) — the visible Close button covers the rest.
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- mouse/touch-only click-outside-to-dismiss backdrop; Escape (above) and the visible Close button are the keyboard path
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(9,30,66,0.54)" }} onClick={onClose}>
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- stops the click from reaching the backdrop above; every real control inside is an independently keyboard-accessible button */}
       <div className="w-full max-w-sm bg-white rounded shadow-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="px-4 py-2 flex items-center justify-between" style={{ backgroundColor: C.bg, borderBottom: `1px solid ${C.border}` }}>
           <span className="text-xs font-medium" style={{ color: C.textMuted }}>
