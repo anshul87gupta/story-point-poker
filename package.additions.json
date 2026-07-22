@@ -1,6 +1,5 @@
 {
-  "_note": "Do NOT copy this file over your real package.json. Merge these two sections (scripts, devDependencies) into your existing file by hand, then run npm install. Your existing 'dependencies' (react, react-dom, lucide-react, etc.) should stay exactly as they are.",
-
+  "_note": "Do NOT copy this file over your real package.json. In your package.json: (1) change the 'lint' script from 'oxlint' to 'eslint .', (2) add 'lint:fix' below, (3) merge the other scripts + devDependencies in, (4) remove 'oxlint' from devDependencies. Then run the npm commands listed in chat to actually install/uninstall.",
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -11,14 +10,12 @@
     "test:e2e": "playwright test",
     "prepare": "husky"
   },
-
   "devDependencies": {
     "@eslint/js": "^9.9.0",
     "@playwright/test": "^1.46.0",
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.5.0",
-    "@vitejs/plugin-react": "^4.3.0",
     "eslint": "^9.9.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jsx-a11y": "^6.9.0",
