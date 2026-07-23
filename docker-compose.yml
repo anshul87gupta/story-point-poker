@@ -11,3 +11,34 @@ services:
       - .:/app
 
       - /app/node_modules
+
+  # Note the `/app/vendor` anonymous volume on `backend` — it's the exact same trick your
+  # `react` service already uses with `/app/node_modules`: it keeps the container's own
+  # Linux-built vendor/ separate from your WSL-mounted folder, for the same reason.
+  backend:
+    build: ./backend
+    container_name: story-point-poker-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /app/vendor
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: story-point-poker-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: story_point_poker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
