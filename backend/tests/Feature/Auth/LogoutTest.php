@@ -18,8 +18,8 @@ it('logs out an authenticated user', function () {
     $token = csrfToken();
 
     $response = $this->actingAs($user)
-    ->withHeader('X-XSRF-TOKEN', $token)
-    ->postJson('/api/logout');
+        ->withHeader('X-XSRF-TOKEN', $token)
+        ->postJson('/api/logout');
 
     $response->assertNoContent();
     $this->assertGuest();

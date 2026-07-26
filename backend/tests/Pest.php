@@ -49,10 +49,10 @@ function something()
     // ..
 }
 
-
 function csrfToken(): string
 {
     $response = test()->get('/sanctum/csrf-cookie');
     $cookie = collect($response->headers->getCookies())->firstWhere('name', 'XSRF-TOKEN');
+
     return urldecode($cookie->getValue());
 }
