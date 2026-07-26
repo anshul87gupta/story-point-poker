@@ -1,14 +1,12 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
-| Phase 0: just a health check to confirm the container, database connection
-| (indirectly, once migrations run), and CI wiring all actually work before
-| any real feature is built on top.
 */
 
 Route::get('/health', function () {
@@ -17,4 +15,14 @@ Route::get('/health', function () {
         'service' => 'story-point-poker-api',
         'timestamp' => now()->toIso8601String(),
     ]);
+});
+
+// Public — no session required yet
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
+
+// Requires an authenticated session (Sanctum SPA cookie auth, via statefulApi())
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'me']);
 });

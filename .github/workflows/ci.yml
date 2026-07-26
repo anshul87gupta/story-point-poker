@@ -92,6 +92,7 @@ jobs:
           extensions: pdo, pdo_pgsql
 
       - run: composer install --no-interaction --prefer-dist
+      - run: ./vendor/bin/pint --test
       - run: cp .env.example .env
       - run: php artisan key:generate
       - run: php artisan migrate --force

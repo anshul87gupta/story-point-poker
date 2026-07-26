@@ -1,18 +1,56 @@
 import React, { useState, useEffect } from "react";
 import { User, LogIn, UserPlus, LogOut, X } from "lucide-react";
 import { C } from "../../theme";
+import { api } from "../../api/client";
 
-/* feature: clickable profile icon — UI only, no backend yet. Self-contained state so it
-   can't affect any other part of the app. */
+/* feature: clickable profile icon, now backed by real Sanctum SPA (cookie) auth.
+   Still self-contained (its own state) so it can't affect any other part of the app —
+   the game/room state and the account-auth state remain deliberately separate concerns. */
 export default function AuthMenu({ t }) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState("menu"); // menu | signin | signup
-  const [signedIn, setSignedIn] = useState(false);
+  const [user, setUser] = useState(null); // null = signed out
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  const [fullNameField, setFullNameField] = useState("");
   const [emailField, setEmailField] = useState("");
+  const [passwordField, setPasswordField] = useState("");
+  const [confirmPasswordField, setConfirmPasswordField] = useState("");
+
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState(null);
+
+  // Check for an existing session on mount, so a page refresh doesn't lose the sign-in —
+  // this is the real fix for what used to just be local component state before.
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .me()
+      .then((data) => {
+        if (!cancelled) setUser(data.user);
+      })
+      .catch(() => {
+        /* 401 just means signed out — not an error worth surfacing */
+      })
+      .finally(() => {
+        if (!cancelled) setCheckingSession(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function close() {
     setOpen(false);
     setView("menu");
+    setFormError(null);
+  }
+
+  function resetFields() {
+    setFullNameField("");
+    setEmailField("");
+    setPasswordField("");
+    setConfirmPasswordField("");
   }
 
   // Real keyboard support for dismissing the menu, since the backdrop div below is
@@ -26,18 +64,56 @@ export default function AuthMenu({ t }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
-  function handleSignIn() {
-    setSignedIn(true);
-    close();
+  function firstFieldError(err, field) {
+    return err?.errors?.[field]?.[0] || null;
   }
-  function handleSignUp() {
-    setSignedIn(true);
-    close();
+
+  async function handleSignIn() {
+    setSubmitting(true);
+    setFormError(null);
+    try {
+      const data = await api.login({ email: emailField, password: passwordField });
+      setUser(data.user);
+      resetFields();
+      setView("menu"); // show the signed-in confirmation, don't hide the whole popover
+    } catch (err) {
+      setFormError(firstFieldError(err, "email") || err.message);
+    } finally {
+      setSubmitting(false);
+    }
   }
-  function handleLogOut() {
-    setSignedIn(false);
-    setEmailField("");
-    close();
+
+  async function handleSignUp() {
+    setSubmitting(true);
+    setFormError(null);
+    try {
+      const data = await api.register({
+        name: fullNameField,
+        email: emailField,
+        password: passwordField,
+        password_confirmation: confirmPasswordField,
+      });
+      setUser(data.user);
+      resetFields();
+      setView("menu"); // show the signed-in confirmation, don't hide the whole popover
+    } catch (err) {
+      setFormError(firstFieldError(err, "name") || firstFieldError(err, "email") || firstFieldError(err, "password") || err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleLogOut() {
+    setSubmitting(true);
+    try {
+      await api.logout();
+    } catch {
+      /* best-effort — clear local state regardless, session is likely already gone */
+    } finally {
+      setUser(null);
+      setSubmitting(false);
+      close();
+    }
   }
 
   return (
@@ -48,6 +124,7 @@ export default function AuthMenu({ t }) {
         className="w-6 h-6 rounded-full flex items-center justify-center"
         style={{ backgroundColor: C.bg }}
         aria-label={t.signIn}
+        disabled={checkingSession}
       >
         <User className="w-4 h-4" style={{ color: C.textMuted }} />
       </button>
@@ -58,23 +135,29 @@ export default function AuthMenu({ t }) {
           <div className="fixed inset-0 z-30" onClick={close} />
           <div className="absolute right-0 top-full mt-2 z-40 w-72 bg-white rounded shadow-lg border p-4" style={{ borderColor: C.border }}>
             {view === "menu" &&
-              (signedIn ? (
+              (user ? (
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <div
                       className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
                       style={{ backgroundColor: C.primary }}
                     >
-                      {(emailField || "U")[0].toUpperCase()}
+                      {(user.name || user.email || "U")[0].toUpperCase()}
                     </div>
-                    <span className="text-sm truncate" style={{ color: C.navy }}>
-                      {emailField || "you@example.com"}
-                    </span>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate" style={{ color: C.navy }}>
+                        {user.name}
+                      </div>
+                      <div className="text-xs truncate" style={{ color: C.textMuted }}>
+                        {user.email}
+                      </div>
+                    </div>
                   </div>
                   <button
                     onClick={handleLogOut}
+                    disabled={submitting}
                     className="w-full flex items-center justify-center gap-2 text-sm font-medium rounded px-3 py-2 border"
-                    style={{ borderColor: C.border, color: C.alarmText }}
+                    style={{ borderColor: C.border, color: C.alarmText, opacity: submitting ? 0.6 : 1 }}
                   >
                     <LogOut className="w-4 h-4" /> {t.logOut}
                   </button>
@@ -111,6 +194,8 @@ export default function AuthMenu({ t }) {
 
                 {view === "signup" && (
                   <input
+                    value={fullNameField}
+                    onChange={(e) => setFullNameField(e.target.value)}
                     placeholder={t.fullName}
                     className="w-full mb-2 rounded px-2 py-1.5 text-sm border focus:outline-none"
                     style={{ borderColor: C.border, color: C.navy }}
@@ -126,6 +211,8 @@ export default function AuthMenu({ t }) {
                 />
                 <input
                   type="password"
+                  value={passwordField}
+                  onChange={(e) => setPasswordField(e.target.value)}
                   placeholder={t.password}
                   className="w-full mb-2 rounded px-2 py-1.5 text-sm border focus:outline-none"
                   style={{ borderColor: C.border, color: C.navy }}
@@ -133,6 +220,8 @@ export default function AuthMenu({ t }) {
                 {view === "signup" && (
                   <input
                     type="password"
+                    value={confirmPasswordField}
+                    onChange={(e) => setConfirmPasswordField(e.target.value)}
                     placeholder={t.confirmPassword}
                     className="w-full mb-2 rounded px-2 py-1.5 text-sm border focus:outline-none"
                     style={{ borderColor: C.border, color: C.navy }}
@@ -143,13 +232,21 @@ export default function AuthMenu({ t }) {
                     {t.forgotPassword}
                   </button>
                 )}
+
+                {formError && (
+                  <p className="text-xs mb-2" style={{ color: C.alarmText }}>
+                    {formError}
+                  </p>
+                )}
+
                 <button
                   type="button"
                   onClick={view === "signin" ? handleSignIn : handleSignUp}
+                  disabled={submitting}
                   className="w-full text-sm font-medium rounded px-3 py-2 text-white mb-3"
-                  style={{ backgroundColor: C.primary }}
+                  style={{ backgroundColor: C.primary, opacity: submitting ? 0.6 : 1 }}
                 >
-                  {view === "signin" ? t.signIn : t.createAccount}
+                  {submitting ? "..." : view === "signin" ? t.signIn : t.createAccount}
                 </button>
 
                 <div className="flex items-center gap-2 mb-3">
