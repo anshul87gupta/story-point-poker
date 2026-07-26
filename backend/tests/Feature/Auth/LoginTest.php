@@ -15,13 +15,11 @@ beforeEach(function () {
 
 it('logs in with correct credentials', function () {
     $user = User::factory()->create(['password' => bcrypt('password123')]);
-    $token = csrfToken();
 
-    $response = $this->withHeader('X-XSRF-TOKEN', $token)
-        ->postJson('/api/login', [
-            'email' => $user->email,
-            'password' => 'password123',
-        ]);
+    $response = $this->postJsonWithCsrf('/api/login', [
+        'email' => $user->email,
+        'password' => 'password123',
+    ]);
 
     $response->assertOk()->assertJsonPath('user.email', $user->email);
     $this->assertAuthenticatedAs($user);
@@ -29,26 +27,21 @@ it('logs in with correct credentials', function () {
 
 it('rejects incorrect credentials', function () {
     $user = User::factory()->create(['password' => bcrypt('password123')]);
-    $token = csrfToken();
 
-    $response = $this->withHeader('X-XSRF-TOKEN', $token)
-        ->postJson('/api/login', [
-            'email' => $user->email,
-            'password' => 'wrong-password',
-        ]);
+    $response = $this->postJsonWithCsrf('/api/login', [
+        'email' => $user->email,
+        'password' => 'wrong-password',
+    ]);
 
     $response->assertUnprocessable();
     $this->assertGuest();
 });
 
 it('rejects login for an email that does not exist', function () {
-    $token = csrfToken();
-
-    $response = $this->withHeader('X-XSRF-TOKEN', $token)
-        ->postJson('/api/login', [
-            'email' => 'nobody@example.com',
-            'password' => 'password123',
-        ]);
+    $response = $this->postJsonWithCsrf('/api/login', [
+        'email' => 'nobody@example.com',
+        'password' => 'password123',
+    ]);
 
     $response->assertUnprocessable();
     $this->assertGuest();

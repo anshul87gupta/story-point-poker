@@ -15,18 +15,15 @@ beforeEach(function () {
 
 it('logs out an authenticated user', function () {
     $user = User::factory()->create();
-    $token = csrfToken();
 
     $response = $this->actingAs($user)
-        ->withHeader('X-XSRF-TOKEN', $token)
-        ->postJson('/api/logout');
+        ->postJsonWithCsrf('/api/logout');
 
     $response->assertNoContent();
 });
 
 it('rejects logout when not authenticated', function () {
-    $token = csrfToken();
-    $response = $this->withHeader('X-XSRF-TOKEN', $token)->postJson('/api/logout');
+    $response = $this->postJsonWithCsrf('/api/logout');
 
     $response->assertUnauthorized();
 });
