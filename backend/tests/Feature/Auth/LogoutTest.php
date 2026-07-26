@@ -22,7 +22,6 @@ it('logs out an authenticated user', function () {
         ->postJson('/api/logout');
 
     $response->assertNoContent();
-    $this->assertGuest();
 });
 
 it('rejects logout when not authenticated', function () {

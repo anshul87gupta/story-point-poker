@@ -52,7 +52,21 @@ function something()
 function csrfToken(): string
 {
     $response = test()->get('/sanctum/csrf-cookie');
-    $cookie = collect($response->headers->getCookies())->firstWhere('name', 'XSRF-TOKEN');
+    $setCookieHeader = $response->headers->get('set-cookie');
 
-    return urldecode($cookie->getValue());
+    if (is_string($setCookieHeader)) {
+        $cookieHeader = $setCookieHeader;
+    } elseif (is_array($setCookieHeader) && count($setCookieHeader) > 0) {
+        $cookieHeader = $setCookieHeader[0];
+    } else {
+        throw new RuntimeException('CSRF cookie was not set in the response.');
+    }
+
+    preg_match('/XSRF-TOKEN=([^;]+)/', $cookieHeader, $matches);
+
+    if (! isset($matches[1])) {
+        throw new RuntimeException('XSRF-TOKEN cookie was not present in the response.');
+    }
+
+    return urldecode($matches[1]);
 }
