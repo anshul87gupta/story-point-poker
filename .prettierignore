@@ -5,3 +5,9 @@ node_modules
 playwright-report
 test-results
 package-lock.json
+
+# Laravel
+backend/vendor
+backend/storage
+backend/bootstrap/cache
+backend/public/build

@@ -4,9 +4,10 @@ import { Info, Globe, Copy, Check, MessageCircle, Mail, Share2, Lock, ClipboardL
 import { C } from "./theme";
 import { DECKS } from "./config/decks";
 import { translations, LANG_LABELS, SPEECH_LOCALES } from "./i18n/translations";
-import { avatarEmoji, generateRoomCode, cardToNumber, validateName, isRoomFull } from "./utils/helpers";
+import { avatarEmoji, cardToNumber, validateName, isRoomFull } from "./utils/helpers";
 import { NAME_MAX_LENGTH } from "./config/limits";
 import { computeAlignment } from "./utils/alignment";
+import { api } from "./api/client";
 
 import PlayersPanel from "./components/players/PlayersPanel";
 import RoomFullNotice from "./components/players/RoomFullNotice";
@@ -54,12 +55,63 @@ export default function StoryPointPoker() {
   const [roundHistory, setRoundHistory] = useState([]);
 
   const [roomCode, setRoomCode] = useState(null);
+  const [moderatorToken, setModeratorToken] = useState(null);
+  const [creatingRoom, setCreatingRoom] = useState(false);
+  const [createRoomError, setCreateRoomError] = useState(null);
+  const [rehydrating, setRehydrating] = useState(true);
   const [copied, setCopied] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
   useEffect(() => {
     setCanNativeShare(typeof navigator !== "undefined" && !!navigator.share);
   }, []);
-  const inviteLink = roomCode ? `https://storypointpoker.app/room/${roomCode}` : "";
+  const inviteLink = roomCode ? `${window.location.origin}/room/${roomCode}` : "";
+
+  // On load, if the URL points at a room we created (moderator token still in this browser's
+  // sessionStorage), restore it — this is what actually fixes "refreshing loses everything."
+  // A different browser/tab opening the same link without that token is Phase 3's job (real
+  // multi-user presence via Reverb) — for now it just falls through to the create-room screen.
+  useEffect(() => {
+    const match = window.location.pathname.match(/^\/room\/([A-Za-z0-9]+)$/);
+    if (!match) {
+      setRehydrating(false);
+      return;
+    }
+    const code = match[1];
+    const storedToken = sessionStorage.getItem(`spp_moderator_token_${code}`);
+    if (!storedToken) {
+      setRehydrating(false);
+      return;
+    }
+    api
+      .getRoom(code)
+      .then((data) => {
+        const room = data.room;
+        setRoomCode(room.code);
+        setModeratorToken(storedToken);
+        setDeckType(room.deckType);
+        setDisabledCards(room.disabledCards);
+        setSprintGoal(room.sprintGoal || "");
+        setPlayers((prev) => {
+          const self = {
+            id: "self",
+            name: room.moderatorName,
+            emoji: avatarEmoji(room.moderatorName),
+            isModerator: true,
+            isObserver: false,
+            vote: null,
+          };
+          if (!room.started) return [self];
+          return prev.some((p) => p.id === "p2")
+            ? prev
+            : [self, { id: "p2", name: "Rahul", emoji: "🎮", isModerator: false, isObserver: false, vote: null }];
+        });
+        setView(room.started ? "voting" : "invite");
+      })
+      .catch(() => {
+        /* room no longer exists, or the code's invalid — fall back to the create-room screen */
+      })
+      .finally(() => setRehydrating(false));
+  }, []);
 
   const [sprintGoal, setSprintGoal] = useState("");
   const [sprintGoalDraft, setSprintGoalDraft] = useState("");
@@ -71,17 +123,33 @@ export default function StoryPointPoker() {
 
   const [roomFullNoticeOpen, setRoomFullNoticeOpen] = useState(false);
 
-  function handleCreateRoom() {
+  async function handleCreateRoom() {
     const error = validateName(name);
     if (error) {
       setNameError(error);
       return;
     }
     setNameError(null);
+    setCreateRoomError(null);
+    setCreatingRoom(true);
     const trimmed = name.trim();
-    setPlayers([{ id: "self", name: trimmed, emoji: avatarEmoji(trimmed), isModerator: true, isObserver: false, vote: null }]);
-    setRoomCode(generateRoomCode());
-    setView("invite");
+    try {
+      const data = await api.createRoom({ name: trimmed });
+      const room = data.room;
+      setPlayers([{ id: "self", name: trimmed, emoji: avatarEmoji(trimmed), isModerator: true, isObserver: false, vote: null }]);
+      setRoomCode(room.code);
+      setModeratorToken(data.moderatorToken);
+      sessionStorage.setItem(`spp_moderator_token_${room.code}`, data.moderatorToken);
+      setDeckType(room.deckType);
+      setDisabledCards(room.disabledCards);
+      setSprintGoal(room.sprintGoal || "");
+      window.history.pushState({}, "", `/room/${room.code}`);
+      setView("invite");
+    } catch (err) {
+      setCreateRoomError(err.errors?.name?.[0] || err.message);
+    } finally {
+      setCreatingRoom(false);
+    }
   }
 
   function handleStartEstimating() {
@@ -93,6 +161,12 @@ export default function StoryPointPoker() {
         : [...prev, { id: "p2", name: "Rahul", emoji: "🎮", isModerator: false, isObserver: false, vote: null }]
     );
     setView("voting");
+    if (roomCode && moderatorToken) {
+      api.updateRoom(roomCode, { started: true }, moderatorToken).catch(() => {
+        /* best-effort — the local view has already advanced; worst case a refresh lands back
+           on the invite screen instead of voting, which is recoverable, not data loss */
+      });
+    }
   }
 
   // feature: room capacity — real, production-ready cap + blocking-message UI. Since there's
@@ -158,8 +232,12 @@ export default function StoryPointPoker() {
     setEditingSprintGoal(true);
   }
   function saveSprintGoal() {
-    setSprintGoal(sprintGoalDraft.trim());
+    const trimmed = sprintGoalDraft.trim();
+    setSprintGoal(trimmed);
     setEditingSprintGoal(false);
+    if (roomCode && moderatorToken) {
+      api.updateRoom(roomCode, { sprint_goal: trimmed || null }, moderatorToken).catch(() => {});
+    }
   }
   function startEditDoD() {
     setStoryDoDDraft(storyDoD);
@@ -227,14 +305,18 @@ export default function StoryPointPoker() {
   }
   function leaveRoom(id) {
     if (id === "self") {
+      if (roomCode) sessionStorage.removeItem(`spp_moderator_token_${roomCode}`);
+      window.history.pushState({}, "", "/");
       setView("create");
       setPlayers([]);
       setRoomCode(null);
+      setModeratorToken(null);
       setSprintGoal("");
       setEditingSprintGoal(false);
       setStoryDoD("");
       setEditingDoD(false);
       setNameError(null);
+      setCreateRoomError(null);
       return;
     }
     setPlayers((prev) => prev.filter((p) => p.id !== id));
@@ -245,16 +327,25 @@ export default function StoryPointPoker() {
     setDisabledCards([]);
     setPlayers((prev) => prev.map((p) => ({ ...p, vote: null })));
     setRevealed(false);
+    if (roomCode && moderatorToken) {
+      api.updateRoom(roomCode, { deck_type: newType, disabled_cards: [] }, moderatorToken).catch(() => {});
+    }
   }
   function toggleCardEnabled(value) {
     setDisabledCards((prev) => {
       const isCurrentlyActive = !prev.includes(value);
+      let next = prev;
       if (isCurrentlyActive) {
         const remainingNumeric = DECKS[deckType].cards.filter((v) => v !== "?" && !prev.includes(v));
         if (value !== "?" && remainingNumeric.length <= 2) return prev;
-        return [...prev, value];
+        next = [...prev, value];
+      } else {
+        next = prev.filter((v) => v !== value);
       }
-      return prev.filter((v) => v !== value);
+      if (roomCode && moderatorToken) {
+        api.updateRoom(roomCode, { disabled_cards: next }, moderatorToken).catch(() => {});
+      }
+      return next;
     });
     setPlayers((prev) => prev.map((p) => ({ ...p, vote: null })));
     setRevealed(false);
@@ -286,6 +377,16 @@ export default function StoryPointPoker() {
         avgCard = activeNumericCards[avgIdx] ?? null;
       }
     }
+  }
+
+  if (rehydrating) {
+    return (
+      <div className="w-full flex items-center justify-center" style={{ minHeight: 480, backgroundColor: C.bg }}>
+        <span className="text-sm" style={{ color: C.textMuted }}>
+          {t.loading}
+        </span>
+      </div>
+    );
   }
 
   return (
@@ -367,15 +468,20 @@ export default function StoryPointPoker() {
             <p className="text-xs mt-1.5 mb-4" style={{ color: C.alarmText }}>
               {t[nameError]}
             </p>
+          ) : createRoomError ? (
+            <p className="text-xs mt-1.5 mb-4" style={{ color: C.alarmText }}>
+              {createRoomError}
+            </p>
           ) : (
             <div className="mb-6" />
           )}
           <button
             onClick={handleCreateRoom}
+            disabled={creatingRoom}
             className="font-medium text-sm rounded px-6 py-2.5 w-full max-w-xs sm:w-auto text-white"
-            style={{ backgroundColor: C.primary, color: "#fff", cursor: "pointer" }}
+            style={{ backgroundColor: C.primary, color: "#fff", cursor: creatingRoom ? "default" : "pointer", opacity: creatingRoom ? 0.7 : 1 }}
           >
-            {t.createRoom}
+            {creatingRoom ? t.loading : t.createRoom}
           </button>
         </div>
       )}

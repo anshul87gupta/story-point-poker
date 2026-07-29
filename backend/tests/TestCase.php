@@ -17,6 +17,11 @@ abstract class TestCase extends BaseTestCase
         return $this->withHeaders($this->withCsrfHeaders($headers))->postJson($uri, $data);
     }
 
+    protected function patchJsonWithCsrf(string $uri, array $data = [], array $headers = []): TestResponse
+    {
+        return $this->withHeaders($this->withCsrfHeaders($headers))->patchJson($uri, $data);
+    }
+
     protected function getJsonWithCsrf(string $uri, array $headers = []): TestResponse
     {
         return $this->withHeaders($this->withCsrfHeaders($headers))->getJson($uri);

@@ -11,11 +11,11 @@ async function ensureCsrfCookie() {
   await fetch(`${API_URL}/sanctum/csrf-cookie`, { credentials: "include" });
 }
 
-async function request(path, { method = "GET", body } = {}) {
+async function request(path, { method = "GET", body, headers: extraHeaders } = {}) {
   const needsCsrf = method !== "GET";
   if (needsCsrf) await ensureCsrfCookie();
 
-  const headers = { Accept: "application/json" };
+  const headers = { Accept: "application/json", ...extraHeaders };
   if (body) headers["Content-Type"] = "application/json";
   if (needsCsrf) {
     const token = getCookie("XSRF-TOKEN");
@@ -51,4 +51,16 @@ export const api = {
   login: (payload) => request("/api/login", { method: "POST", body: payload }),
   logout: () => request("/api/logout", { method: "POST" }),
   me: () => request("/api/user"),
+
+  // Rooms — deliberately no account required. moderatorToken (returned once, at creation)
+  // is what authorizes updateRoom, not a Sanctum session — see backend/app/Http/Controllers/
+  // Api/RoomController.php's docblock for why.
+  createRoom: (payload) => request("/api/rooms", { method: "POST", body: payload }),
+  getRoom: (code) => request(`/api/rooms/${code}`),
+  updateRoom: (code, payload, moderatorToken) =>
+    request(`/api/rooms/${code}`, {
+      method: "PATCH",
+      body: payload,
+      headers: { "X-Moderator-Token": moderatorToken },
+    }),
 };

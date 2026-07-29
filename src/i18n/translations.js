@@ -93,6 +93,7 @@ export const translations = {
     roomFullConsult: "Please consult with your Room Creator to increase capacity or free up a spot.",
     roomCreatedBy: "Room created by",
     simulateJoin: "Simulate a player joining (demo)",
+    loading: "Loading…",
   },
   de: {
     appTitle: "Story Point Poker",
@@ -187,6 +188,7 @@ export const translations = {
     roomFullConsult: "Bitte wende dich an den Raum-Ersteller, um die Kapazität zu erhöhen oder einen Platz freizugeben.",
     roomCreatedBy: "Raum erstellt von",
     simulateJoin: "Beitritt eines Spielers simulieren (Demo)",
+    loading: "Wird geladen…",
   },
   hi: {
     appTitle: "स्टोरी पॉइंट पोकर",
@@ -280,6 +282,7 @@ export const translations = {
     roomFullConsult: "कृपया क्षमता बढ़ाने या जगह खाली करने के लिए अपने रूम क्रिएटर से संपर्क करें।",
     roomCreatedBy: "रूम बनाया गया",
     simulateJoin: "खिलाड़ी के शामिल होने का अनुकरण करें (डेमो)",
+    loading: "लोड हो रहा है…",
   },
 };
 

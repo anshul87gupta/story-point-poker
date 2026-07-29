@@ -12,7 +12,22 @@ import prettierConfig from "eslint-config-prettier";
   won't silently break on a minor version bump.
 */
 export default [
-  { ignores: ["dist", "build", "coverage", "node_modules", "playwright-report", "test-results"] },
+  {
+    ignores: [
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      "node_modules/**",
+      "playwright-report/**",
+      "test-results/**",
+
+      // Laravel
+      "backend/vendor/**",
+      "backend/storage/**",
+      "backend/bootstrap/cache/**",
+      "backend/public/build/**",
+    ],
+  },
 
   js.configs.recommended,
 

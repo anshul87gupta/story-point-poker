@@ -14,4 +14,12 @@ return [
     // Not yet enforced client-side (AuthMenu has no password rules today) —
     // this is the server being the source of truth until the frontend catches up.
     'password_min' => 8,
+
+    // Matches SPRINT_GOAL_MAX_LENGTH in the frontend's config/limits.js
+    'sprint_goal_max' => 250,
+
+    // Matches MAX_PLAYERS_PER_ROOM in the frontend's config/limits.js. Stored on each room
+    // at creation time (a snapshot, not read live) so changing this later doesn't retroactively
+    // alter already-created rooms.
+    'max_players_default' => 10,
 ];

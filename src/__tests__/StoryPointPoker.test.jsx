@@ -1,5 +1,5 @@
 import React from "react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import StoryPointPoker from "../StoryPointPoker";
@@ -36,6 +36,22 @@ describe("Create room — name validation", () => {
   });
 
   it("proceeds to the invite screen with a valid name", async () => {
+    // handleCreateRoom now calls the real backend (POST /api/rooms) — mock the CSRF-cookie
+    // call and the actual create-room response, matching src/api/client.js's contract.
+    let call = 0;
+    global.fetch = vi.fn(() => {
+      call += 1;
+      if (call === 1) return Promise.resolve({ ok: true, json: () => Promise.resolve({}) }); // csrf-cookie
+      return Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            room: { code: "abc12345", moderatorName: "Alex", deckType: "scrum", disabledCards: [], sprintGoal: null, maxPlayers: 10, started: false },
+            moderatorToken: "test-token",
+          }),
+      });
+    });
+
     const user = userEvent.setup();
     render(<StoryPointPoker />);
 
